@@ -1,0 +1,16 @@
+{
+  "name": "synacor-challenge",
+  "version": "1.0.0",
+  "description": "",
+  "main": "run.js",
+  "scripts": {
+    "challenge": "node run.js data/challenge.bin data/challenge-solution.txt 2> logs/challenge-debug.txt | tee logs/challenge-output.txt",
+    "test":      "node run.js data/test.bin                                  2> logs/test-debug.txt      | tee logs/test-output.txt",
+    "thanks":    "node run.js data/thanks.bin                                2> logs/thanks-debug.txt    | tee logs/thanks-output.txt"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "keypress": "^0.2.1"
+  }
+}
