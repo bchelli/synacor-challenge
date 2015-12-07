@@ -138,12 +138,20 @@ var instructions = [
 
 // public API
 module.exports = {
-	load: function (mem, keys) {
+	setMemory: function (mem) {
 		memory = mem;
-		keyboard.load(keys);
+	},
+	setKeyboard: function (keys) {
+		keyboard.setKeyboard(keys);
+	},
+	setRegisters: function (v) {
+		registers = [v, v, v, v, v, v, v, v];
 	},
 	getPosition: function () {
 		return position;
+	},
+	getMemory: function () {
+		return memory;
 	},
 	getInstruction: function () {
 		return instructions[readMemory()];

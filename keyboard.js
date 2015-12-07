@@ -30,7 +30,7 @@ process.stdin.setRawMode(true);
 process.stdin.resume();
 
 module.exports = {
-	load: function (data) {
+	setKeyboard: function (data) {
 		chars = data;
 	},
 	onKeyPress: onKeyPress

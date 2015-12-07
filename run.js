@@ -1,27 +1,86 @@
 
 var fs = require('fs');
 var vm = require('./vm');
+var program = require('commander');
 
 
 
-var DEBUG_LEVEL = 1;                      // 0 - Nothing
+
+
+var DEBUG_LEVEL = 0;                      // 0 - Nothing
                                           // 1 - Operation + Params
                                           // 2 - Operation + Params + Registers
                                           // 3 - Operation + Params + Registers + Stack
 
 
-// load the memory dump
-var memory = [];
-var chars  = [];
-var data = fs.readFileSync(process.argv[2]);
-for (var i = 0; i<data.length/2; i++) {
-	memory[i] = data[i*2]+data[i*2+1]*256;
-}
-if (process.argv.length >= 4) {
-	chars = fs.readFileSync(process.argv[3]);
-}
-vm.load(memory, chars);
 
+// command line interpreter
+program
+	.version('0.0.1');
+
+
+
+program
+	.command('disasm <binary_file>')
+	.action(function (binary_file) {
+		loadMemory(binary_file);
+		disasembler();
+	});
+
+
+program
+	.command('run <binary_file>')
+	.option('-l, --log <level>', 'Set log level')
+	.option('-d, --dump <file>', 'Dump memory after 5s of execution')
+	.option('-k, --keyboard <file>', 'Add a keyboard file')
+	.option('-r, --registers <initial_value>', 'Set the initial value of the 8 registers')
+	.action(function (binary_file, options) {
+
+		loadMemory(binary_file);
+
+		if (options.keyboard) {
+			loadKeyboard(options.keyboard);
+		}
+
+		if (options.dump) {
+			dump(options.dump);
+		}
+
+		if (options.log) {
+			DEBUG_LEVEL = +options.log;
+		}
+
+		if (options.registers) {
+			vm.setRegisters(+options.registers);
+		}
+
+		run ();
+
+	});
+
+program.parse(process.argv);
+
+
+
+
+// load the memory dump
+function loadMemory (file) {
+	var memory = [];
+	var data = fs.readFileSync(file);
+	for (var i = 0; i<data.length/2; i++) {
+		memory[i] = data[i*2]+data[i*2+1]*256;
+	}
+	vm.setMemory(memory);
+}
+
+
+
+
+// load the keyboard solution
+function loadKeyboard (file) {
+	var chars = fs.readFileSync(file);
+	vm.setKeyboard(chars);
+}
 
 
 
@@ -56,7 +115,42 @@ function run () {
 		}
 	}, 0);
 }
-run();
 
 
 
+
+
+// dump current memory program
+function dump (file) {
+	setTimeout (function () {
+		var mem = vm.getMemory();
+		var data = [];
+		for (var i = 0; i<mem.length; i++) {
+			data[i*2]   = memory[i] % 256;
+			data[i*2+1] = (memory[i] - data[i*2]) / 256;
+		}
+		fs.writeFileSync(file, new Buffer(data));
+		process.exit();
+	}, 5000);
+}
+
+
+
+
+
+// disasembler
+function disasembler () {
+	var mem = vm.getMemory();
+	var position = 0;
+	while (position < mem.length) {
+		position    = vm.getPosition();
+		var instruction = vm.getInstruction();
+		if (instruction) {
+			var params      = vm.getParams(instruction);
+			console.log(pad(position, 5) + '\t' + instruction.opcode + '\t' + params.join(','));
+		} else {
+			console.log(pad(position, 5) + '\tUNKN\t' + pad(mem[position], 5));
+		}
+	}
+	process.exit();
+}

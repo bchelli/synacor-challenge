@@ -627,4 +627,3 @@ now-bypassed confirmation mechanism will not protect you!
 Of course, since teleportation is impossible, this is all totally ridiculous.
 
 What do you do?
-
